@@ -80,3 +80,5 @@ submission = pd.DataFrame({
 
 # Save the submission file
 submission.to_csv('submission.csv', index=False)
+
+# current best = 6709

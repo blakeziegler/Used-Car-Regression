@@ -1,11 +1,13 @@
 import pandas as pd
 import xgboost as xgb
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, roc_auc_score
+from sklearn.model_selection import train_test_split, RandomizedSearchCV, cross_val_score
+from scipy.stats import uniform
+from sklearn.metrics import make_scorer, mean_squared_error, mean_absolute_error
+import numpy as np
 
 # Load the cleaned datasets
-train_clean = pd.read_csv('train_clean.csv')
-test_clean = pd.read_csv('test_clean.csv')
+train_clean = pd.read_csv('playground-series-s4e9/clean_train.csv')
+test_clean = pd.read_csv('playground-series-s4e9/clean_test.csv')
 
 # Prepare the data
 X = train_clean.drop(columns=['Response', 'id'])  # Features
@@ -16,14 +18,14 @@ X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_st
 
 # Define the XGBoost model with the adjusted hyperparameters
 best_params = {
-    'alpha': 0.475,  # Ensuring alpha is within [0, 1]
-    'colsample_bytree': 0.88,
-    'eta': 0.28,
-    'gamma': 0.221,
-    'lambda': 0.254,  # Ensuring lambda is within [0, 1]
-    'max_depth': 7,
-    'n_estimators': 2500,
-    'subsample': 0.99,
+    'alpha': 0.5,  # Ensuring alpha is within [0, 1]
+    'colsample_bytree': 0.85,
+    'eta': 0.2,
+    'gamma': 0.250,
+    'lambda': 0.250,  # Ensuring lambda is within [0, 1]
+    'max_depth': 5,
+    'n_estimators': 1750,
+    'subsample': 0.98,
     'tree_method': 'hist',
     'grow_policy': 'depthwise'
 }
@@ -36,11 +38,9 @@ best_model.fit(X_train, y_train)
 y_pred_val = best_model.predict_proba(X_val)[:, 1]
 y_pred_val_bin = (y_pred_val > 0.5).astype(int)
 
-accuracy = accuracy_score(y_val, y_pred_val_bin)
-auc = roc_auc_score(y_val, y_pred_val)
 
-print(f'Validation Accuracy: {accuracy}')
-print(f'Validation AUC: {auc}')
+rmse_val = np.sqrt(mean_squared_error(y_val, y_pred_val))
+print(f'Validation RMSE: {rmse_val}')
 
 # Prepare the test data
 X_test = test_clean.drop(columns=['id'])
