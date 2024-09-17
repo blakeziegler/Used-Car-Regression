@@ -21,14 +21,14 @@ xgb_model = xgb.XGBRegressor(objective='reg:squarederror', seed=42)
 
 # Define the parameter grid for RandomizedSearchCV
 param_dist = {
-    'max_depth': [2, 3, 4, 5, 6, 7],
-    'eta': uniform(0.01, 0.3),  # Uniform distribution for eta between 0.1 and 0.9
-    'subsample': uniform(0.01, 0.99),  # Uniform distribution for subsample between 0.1 and 1.0
-    'colsample_bytree': uniform(0.01, 0.99),  # Uniform distribution for colsample_bytree between 0.1 and 1.0
-    'n_estimators': [100, 250, 500, 750, 1000, 1500],
-    'gamma': uniform(0.1, 1),
-    'alpha': uniform(0.1, 1),  # Uniform distribution for alpha between 0 and 1
-    'lambda': uniform(0, 1)  # Uniform distribution for lambda between 0 and 1
+    'max_depth': 5,
+    'eta': 0.2,  # Uniform distribution for eta between 0.1 and 0.9
+    'subsample': 0.95, # Uniform distribution for subsample between 0.1 and 1.0
+    'colsample_bytree': 0.85,  # Uniform distribution for colsample_bytree between 0.1 and 1.0
+    'n_estimators': 1500,
+    'gamma': 0.225,
+    'alpha': 0.225,  # Uniform distribution for alpha between 0 and 1
+    'lambda': 0.225  # Uniform distribution for lambda between 0 and 1
 }
 
 # Define RMSE scoring

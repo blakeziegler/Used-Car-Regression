@@ -10,35 +10,37 @@ train_clean = pd.read_csv('playground-series-s4e9/clean_train.csv')
 test_clean = pd.read_csv('playground-series-s4e9/clean_test.csv')
 
 # Prepare the data
-X = train_clean.drop(columns=['Response', 'id'])  # Features
-y = train_clean['Response']  # Target
+X = train_clean.drop(columns=['price', 'id'])  # Features
+y = train_clean['price']  # Target
 
 # Split the training data for validation
 X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Define the XGBoost model with the adjusted hyperparameters
-best_params = {
-    'alpha': 0.5,  # Ensuring alpha is within [0, 1]
-    'colsample_bytree': 0.85,
-    'eta': 0.2,
-    'gamma': 0.250,
-    'lambda': 0.250,  # Ensuring lambda is within [0, 1]
-    'max_depth': 5,
-    'n_estimators': 1750,
-    'subsample': 0.98,
-    'tree_method': 'hist',
-    'grow_policy': 'depthwise'
-}
 
+best_model = xgb.XGBRegressor(
+    n_estimators=2000,
+    eta=0.005,
+    max_depth=4,
+    min_child_weight=0.004,
+    subsample=0.95,
+    colsample_bytree=0.5,
+    reg_lambda=7.75,  
+    alpha=0.30,
+    use_label_encoder=False,
+    eval_metric='mlogloss',
+    random_state=42
+)
+rmse_scorer = make_scorer(lambda y_true, y_pred: np.sqrt(mean_squared_error(y_true, y_pred)), greater_is_better=False)
 # Train the model with the best hyperparameters on the entire dataset
-best_model = xgb.XGBClassifier(objective='binary:logistic', seed=42, **best_params)
-best_model.fit(X_train, y_train)
+best_model.fit(X, y)
+
+X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
+y_pred_val = best_model.predict(X_val)
 
 # Evaluate the model on the validation set
-y_pred_val = best_model.predict_proba(X_val)[:, 1]
-y_pred_val_bin = (y_pred_val > 0.5).astype(int)
+al = best_model.predict(X_val)
 
-
+# Calculate RMSE on the validation set
 rmse_val = np.sqrt(mean_squared_error(y_val, y_pred_val))
 print(f'Validation RMSE: {rmse_val}')
 
@@ -46,12 +48,11 @@ print(f'Validation RMSE: {rmse_val}')
 X_test = test_clean.drop(columns=['id'])
 
 # Make predictions on the test set
-y_pred_test = best_model.predict_proba(X_test)[:, 1]
-
+y_pred_test = best_model.predict(X_test)
 # Prepare the submission file
 submission = pd.DataFrame({
     'id': test_clean['id'],
-    'Response': y_pred_test
+    'price': y_pred_test
 })
 
 # Save the submission file
