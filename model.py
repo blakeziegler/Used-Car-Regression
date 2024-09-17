@@ -18,14 +18,14 @@ X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_st
 
 
 best_model = xgb.XGBRegressor(
-    n_estimators=2000,
-    eta=0.003,
-    max_depth=6,
+    n_estimators=1250,
+    eta=0.005,
+    max_depth=5,
     min_child_weight=0.004,
     subsample=0.96,
-    colsample_bytree=0.5,
+    colsample_bytree=0.45,
     reg_lambda=12,
-    alpha=0.65,
+    alpha=0.5,
     use_label_encoder=False,
     eval_metric='mlogloss',
     random_state=42
@@ -56,6 +56,6 @@ submission = pd.DataFrame({
 })
 
 # Save the submission file
-submission.to_csv('submission2.csv', index=False)
+submission.to_csv('submission3.csv', index=False)
 
 

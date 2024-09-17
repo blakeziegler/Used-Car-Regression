@@ -21,21 +21,21 @@ xgb_model = xgb.XGBRegressor(objective='reg:squarederror', seed=42)
 
 # Define the parameter grid for RandomizedSearchCV
 param_dist = {
-    'n_estimators': [500, 1000, 2000, 5000, 10000],
-    'eta': uniform(0.001, 0.005), 
-    'max_depth': [4,5,6,7,8],
-    'min_child_weight': uniform(0.01, 0.1,),
-    'subsample': uniform(0.9, 0.99),
-    'colsample_bytree': uniform(0.3, 0.6),
-    'reg_lambda': uniform(13, 18),  
-    'alpha': uniform(0.4, 0.8),
+    'n_estimators': [1150, 1250, 1350],
+    'eta': uniform(0.003, 0.008), 
+    'max_depth': [5, 6, 7],
+    'min_child_weight': uniform(0.01, 0.05),
+    'subsample': uniform(0.985, 0.999),
+    'colsample_bytree': uniform(0.3, 0.5),
+    'reg_lambda': uniform(10, 14),  
+    'alpha': uniform(0.25, 0.5)
 }
 
 # Define RMSE scoring
 rmse_scorer = make_scorer(lambda y_true, y_pred: np.sqrt(mean_squared_error(y_true, y_pred)), greater_is_better=False)
 
 # Perform hyperparameter tuning using RandomizedSearchCV on 10% of the data
-random_search = RandomizedSearchCV(estimator=xgb_model, param_distributions=param_dist, scoring=rmse_scorer, cv=5, n_iter=200, verbose=1, n_jobs=-1, random_state=42)
+random_search = RandomizedSearchCV(estimator=xgb_model, param_distributions=param_dist, scoring=rmse_scorer, cv=4, n_iter=500, verbose=1, n_jobs=4, random_state=42)
 random_search.fit(X_tune, y_tune)
 
 # Get the best parameters
