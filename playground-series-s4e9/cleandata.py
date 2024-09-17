@@ -4,7 +4,7 @@ from sklearn.preprocessing import MinMaxScaler
 
 
 # Load the data
-df = pd.read_csv('train.csv')
+df = pd.read_csv('test.csv')
 
 '''
 --------------------
@@ -119,39 +119,38 @@ df = df.drop(columns=['clean_title'])
 
 '''
 --------------------
-	FINAL CLEAN
+    FINAL CLEAN
 --------------------
 '''
+
+# Fill missing values with grouped means
 df['hp'] = df.groupby(['fuel_encoded', 'brand_encoded', pd.cut(df['year_from_mean'], bins=10)], observed=False)['hp'].transform(lambda x: x.fillna(x.mean()))
 df['tank_size'] = df.groupby(['fuel_encoded', 'brand_encoded', pd.cut(df['year_from_mean'], bins=10)], observed=False)['tank_size'].transform(lambda x: x.fillna(x.mean()))
-
 df['cyl'] = df.groupby(['fuel_encoded', 'brand_encoded', pd.cut(df['year_from_mean'], bins=10)], observed=False)['cyl'].transform(lambda x: x.fillna(x.mean()))
 
-# Fill any remaining NaN values with the overall mean or median of the entire column
+# Fill any remaining NaN values with overall column mean
 df['hp'].fillna(df['hp'].mean(), inplace=True)
 df['tank_size'].fillna(df['tank_size'].mean(), inplace=True)
 df['cyl'].fillna(df['cyl'].mean(), inplace=True)
 
+# Scaling and binning the hp column
 df['hp_scaled'] = scaler.fit_transform(df[['hp']])
 df = df.drop(columns=['hp'])
-df['hp_binned'] = pd.cut(df['hp_scaled'], bins=10)
-df = df.drop(columns=['hp_scaled'])
 
-
-df['tank_scaled'] = scaler.fit_transform(df[['tank_size']])
+# Scaling and binning the tank_size column
+scaler2 = MinMaxScaler()
+df['tank_scaled'] = scaler2.fit_transform(df[['tank_size']])
 df = df.drop(columns=['tank_size'])
-df['tank_binned'] = pd.cut(df['tank_scaled'], bins=10)
-df = df.drop(columns=['tank_scaled'])
 
 
-
-
+# Scale the cyl column
 df['cyl_scaled'] = scaler.fit_transform(df[['cyl']])
-df = df.drop(columns=['cyl'])
+df = df.drop(columns=(['cyl']))
 
+# Filter out outliers in mileage_scaled
 df = df[(df['mileage_scaled'] < df['mileage_scaled'].quantile(0.99)) & (df['mileage_scaled'] > df['mileage_scaled'].quantile(0.01))]
 
+# Save the cleaned and encoded DataFrame to a new CSV file
 print(df.head(30))
 print(df.info())
-
-df.to_csv('clean_train.csv', index=False)
+df.to_csv('clean_test.csv', index=False)
