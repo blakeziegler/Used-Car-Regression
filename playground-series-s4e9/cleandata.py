@@ -1,9 +1,10 @@
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import MinMaxScaler
 
 
 # Load the data
-df = pd.read_csv('test.csv')
+df = pd.read_csv('train.csv')
 
 '''
 --------------------
@@ -121,9 +122,10 @@ df = df.drop(columns=['clean_title'])
 	FINAL CLEAN
 --------------------
 '''
-df['hp'] = df.groupby(['fuel_encoded', 'brand_encoded', 'transmission_encoded', pd.cut(df['year_from_mean'], bins=10)], observed=False)['hp'].transform(lambda x: x.fillna(x.mean()))
-df['tank_size'] = df.groupby(['fuel_encoded', 'brand_encoded', 'transmission_encoded', pd.cut(df['year_from_mean'], bins=10)], observed=False)['tank_size'].transform(lambda x: x.fillna(x.mean()))
-df['cyl'] = df.groupby(['fuel_encoded', 'brand_encoded', 'transmission_encoded', pd.cut(df['year_from_mean'], bins=10)], observed=False)['cyl'].transform(lambda x: x.fillna(x.mean()))
+df['hp'] = df.groupby(['fuel_encoded', 'brand_encoded', pd.cut(df['year_from_mean'], bins=10)], observed=False)['hp'].transform(lambda x: x.fillna(x.mean()))
+df['tank_size'] = df.groupby(['fuel_encoded', 'brand_encoded', pd.cut(df['year_from_mean'], bins=10)], observed=False)['tank_size'].transform(lambda x: x.fillna(x.mean()))
+
+df['cyl'] = df.groupby(['fuel_encoded', 'brand_encoded', pd.cut(df['year_from_mean'], bins=10)], observed=False)['cyl'].transform(lambda x: x.fillna(x.mean()))
 
 # Fill any remaining NaN values with the overall mean or median of the entire column
 df['hp'].fillna(df['hp'].mean(), inplace=True)
@@ -132,15 +134,24 @@ df['cyl'].fillna(df['cyl'].mean(), inplace=True)
 
 df['hp_scaled'] = scaler.fit_transform(df[['hp']])
 df = df.drop(columns=['hp'])
+df['hp_binned'] = pd.cut(df['hp_scaled'], bins=10)
+df = df.drop(columns=['hp_scaled'])
+
 
 df['tank_scaled'] = scaler.fit_transform(df[['tank_size']])
 df = df.drop(columns=['tank_size'])
+df['tank_binned'] = pd.cut(df['tank_scaled'], bins=10)
+df = df.drop(columns=['tank_scaled'])
+
+
+
 
 df['cyl_scaled'] = scaler.fit_transform(df[['cyl']])
 df = df.drop(columns=['cyl'])
 
+df = df[(df['mileage_scaled'] < df['mileage_scaled'].quantile(0.99)) & (df['mileage_scaled'] > df['mileage_scaled'].quantile(0.01))]
 
 print(df.head(30))
 print(df.info())
 
-df.to_csv('clean_test.csv', index=False)
+df.to_csv('clean_train.csv', index=False)
