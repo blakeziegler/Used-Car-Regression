@@ -18,14 +18,14 @@ X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_st
 
 
 best_model = xgb.XGBRegressor(
-    n_estimators=2500,
-    eta=0.00375,
+    n_estimators=1500,
+    eta=0.0045,
     max_depth=5,
     min_child_weight=0.004,
     subsample=0.99,
-    colsample_bytree=0.45,
+    colsample_bytree=0.42,
     reg_lambda=12.5,
-    alpha=0.5,
+    alpha=0.45,
     use_label_encoder=False,
     eval_metric='mlogloss',
     random_state=42
