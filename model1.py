@@ -30,14 +30,14 @@ search_space = {
     'eta': Real(0.01, 0.3, 'uniform'),
     'subsample': Real(0.6, 1.0, 'uniform'),
     'colsample_bytree': Real(0.6, 1.0, 'uniform'),
-    'n_estimators': Integer(100, 2000),
+    'n_estimators': Integer(200, 2000),
     'gamma': Real(0, 1, 'uniform'),
     'alpha': Real(0, 1, 'uniform'),
     'lambda': Real(0, 1, 'uniform')
 }
 
 # Perform Bayesian optimization using BayesSearchCV
-opt = BayesSearchCV(xgb_model, search_space, n_iter=200, scoring='neg_root_mean_squared_error', cv=5, verbose=1, n_jobs=-1, random_state=42)
+opt = BayesSearchCV(xgb_model, search_space, n_iter=250, scoring='neg_root_mean_squared_error', cv=5, verbose=1, n_jobs=-1, random_state=42)
 opt.fit(X_train, y_train)
 
 # Get the best parameters
@@ -53,9 +53,22 @@ y_pred_val = best_model.predict(X_val)
 rmse = np.sqrt(mean_squared_error(y_val, y_pred_val))
 print(f'Validation RMSE: {rmse}')
 
+importances = best_model.feature_importances_
+features = X_train.columns
+
+# Create a DataFrame for feature importances
+importance_df = pd.DataFrame({
+    'Feature': features,
+    'Importance': importances
+}).sort_values(by='Importance', ascending=False)
+
+# Print the feature importances table
+print("Feature Importances - XGBoost")
+print(importance_df)
+
 # Define base models for stacking
 lgb_model = LGBMRegressor()
-cat_model = CatBoostRegressor(learning_rate=0.1, depth=6, iterations=1000, verbose=0)
+cat_model = CatBoostRegressor(learning_rate=0.1, depth=6, iterations=1500, verbose=0)
 
 # Define stacking model
 stacking_model = StackingRegressor(
@@ -77,6 +90,38 @@ X_test = test_clean.drop(columns=['id'])
 
 # Make predictions on the test set using the stacking model
 y_pred_test = stacking_model.predict(X_test)
+
+
+# Assuming lgb_model is your trained LightGBM model
+importances = lgb_model.feature_importances_
+features = X_train.columns
+
+# Create a DataFrame for feature importances
+importance_df = pd.DataFrame({
+    'Feature': features,
+    'Importance': importances
+}).sort_values(by='Importance', ascending=False)
+
+# Print the feature importances table
+print("Feature Importances - LightGBM")
+print(importance_df)
+
+
+base_models = stacking_model.named_estimators_
+
+# Iterate over base models and print feature importances
+for name, model in base_models:
+    if hasattr(model, 'feature_importances_'):
+        importances = model.feature_importances_
+        importance_df = pd.DataFrame({
+            'Feature': X_train.columns,
+            'Importance': importances
+        }).sort_values(by='Importance', ascending=False)
+
+        print(f"\nFeature Importances - {name}")
+        print(importance_df)
+
+
 
 # Prepare the submission file
 submission = pd.DataFrame({
