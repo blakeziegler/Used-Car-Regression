@@ -1,8 +1,8 @@
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
-
+scaler = StandardScaler()
 # Load the data
-df = pd.read_csv('train.csv')
+df = pd.read_csv('test.csv')
 '''
 --------------------
 	EXTRACTION
@@ -79,11 +79,10 @@ df['weight_to_power'] = df['hp'] / df['tank_size']
 
 # MODEL YEAR
 
-scaler = StandardScaler()
+
 df['car_age'] = 2024 - df['model_year']
 df = df.drop(columns=['model_year'])
 
-df['miles_per_year'] = df['milage'] / df['car_age']
 
 # MILEAGE
 df['mileage_scaled'] = scaler.fit_transform(df[['milage']])
@@ -115,17 +114,38 @@ df['transmission_encoded'] = df['transmission'].apply(
 df = df.drop(columns=['transmission'])
 
 # EXT COLOR
-ext_col_mapping = {ext_col: idx for idx,
-                   ext_col in enumerate(df['ext_col'].unique())}
+ext_counts = df['ext_col'].value_counts()
 
-df['ext_col_mapping'] = df['ext_col'].map(ext_col_mapping)
+threshold = 25
+
+ext_mapping = ext_counts[ext_counts > threshold].index
+
+ext_encoding = {ext: idx for idx,
+                         ext in enumerate(ext_mapping, start=1)}
+ext_encoding['Other'] = len(
+    ext_mapping) + 1  # Encoding for rare transmissions
+
+df['ext_encoded'] = df['ext_col'].apply(
+    lambda x: ext_encoding.get(x, ext_encoding['Other']))
+
 df = df.drop(columns=['ext_col'])
 
-# INT COLOR
-int_col_mapping = {int_col: idx for idx,
-                   int_col in enumerate(df['int_col'].unique())}
 
-df['int_col_mapping'] = df['int_col'].map(int_col_mapping)
+# INT COLOR
+int_counts = df['int_col'].value_counts()
+
+threshold = 25
+
+int_mapping = int_counts[int_counts > threshold].index
+
+int_encoding = {int1: idx for idx,
+                         int1 in enumerate(int_mapping, start=1)}
+int_encoding['Other'] = len(
+    int_mapping) + 1  # Encoding for rare transmissions
+
+df['int_encoded'] = df['int_col'].apply(
+    lambda x: int_encoding.get(x, int_encoding['Other']))
+
 df = df.drop(columns=['int_col'])
 
 # ACCIDENT
@@ -161,5 +181,7 @@ df = df.drop(columns=['tank_size'])
 # Save the cleaned and encoded DataFrame to a new CSV file
 print(df.head())
 print(df.info())
+print(df.min())
+print(df.max())
 
-df.to_csv('clean_train.csv', index=False)
+df.to_csv('clean_test.csv', index=False)
