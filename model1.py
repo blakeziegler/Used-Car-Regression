@@ -25,7 +25,7 @@ param_dist = {
     'eta': uniform(0.01, 0.3),  # Uniform distribution for eta between 0.1 and 0.9
     'subsample': uniform(0.01, 0.99),  # Uniform distribution for subsample between 0.1 and 1.0
     'colsample_bytree': uniform(0.01, 0.99),  # Uniform distribution for colsample_bytree between 0.1 and 1.0
-    'n_estimators': [200, 1000],
+    'n_estimators': [50, 400],
     'gamma': uniform(0.1, 1),
     'alpha': uniform(0.1, 1),  # Uniform distribution for alpha between 0 and 1
     'lambda': uniform(0, 1)  # Uniform distribution for lambda between 0 and 1
@@ -35,7 +35,7 @@ param_dist = {
 rmse_scorer = make_scorer(lambda y_true, y_pred: np.sqrt(mean_squared_error(y_true, y_pred)), greater_is_better=False)
 
 # Perform hyperparameter tuning using RandomizedSearchCV on 10% of the data
-random_search = RandomizedSearchCV(estimator=xgb_model, param_distributions=param_dist, scoring=rmse_scorer, cv=5, n_iter=200, verbose=1, n_jobs=-1, random_state=42)
+random_search = RandomizedSearchCV(estimator=xgb_model, param_distributions=param_dist, scoring=rmse_scorer, cv=5, n_iter=120, verbose=3, n_jobs=-1, random_state=42)
 random_search.fit(X_tune, y_tune)
 
 # Get the best parameters
