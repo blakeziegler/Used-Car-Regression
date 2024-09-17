@@ -60,4 +60,4 @@ submission.to_csv('submission2.csv', index=False)
 
 #submission.csv
 # Validation Accuracy: 0.8805989673875252
-# Validation AUC: 0.8802304726348824
+# Validation AUC: 0.8802304726348824 Validation AUC: 0.8802304726348824
