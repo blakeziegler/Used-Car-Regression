@@ -140,8 +140,7 @@ df['hp_scaled'] = scaler.fit_transform(df[['hp']])
 df = df.drop(columns=['hp'])
 
 # Scaling and binning the tank_size column
-scaler2 = MinMaxScaler()
-df['tank_scaled'] = scaler2.fit_transform(df[['tank_size']])
+df['tank_scaled'] = scaler.fit_transform(df[['tank_size']])
 df = df.drop(columns=['tank_size'])
 
 
