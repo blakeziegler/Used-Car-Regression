@@ -64,12 +64,14 @@ df = df.drop(columns=['model'])
 
 # MODEL YEAR
 
+scaler = StandardScaler()
 mean_year = df['model_year'].mean()
 df['year_from_mean'] = df['model_year'] - mean_year
+df['year_scaled'] = scaler.fit_transform(df[['year_from_mean']])
 df = df.drop(columns=['model_year'])
+df = df.drop(columns=['year_from_mean'])
 
 # MILEAGE
-scaler = StandardScaler()
 df['mileage_scaled'] = scaler.fit_transform(df[['milage']])
 df = df.drop(columns=['milage'])
 
@@ -124,9 +126,9 @@ df = df.drop(columns=['clean_title'])
 '''
 
 # Fill missing values with grouped means
-df['hp'] = df.groupby(['fuel_encoded', 'brand_encoded', 'transmission_encoded', pd.cut(df['year_from_mean'], bins=10)], observed=False)['hp'].transform(lambda x: x.fillna(x.mean()))
-df['tank_size'] = df.groupby(['fuel_encoded', 'brand_encoded','transmission_encoded', pd.cut(df['year_from_mean'], bins=10)], observed=False)['tank_size'].transform(lambda x: x.fillna(x.mean()))
-df['cyl'] = df.groupby(['fuel_encoded', 'brand_encoded', 'transmission_encoded', pd.cut(df['year_from_mean'], bins=10)], observed=False)['cyl'].transform(lambda x: x.fillna(x.mean()))
+df['hp'] = df.groupby(['fuel_encoded', 'brand_encoded', 'transmission_encoded', pd.cut(df['year_scaled'], bins=10)], observed=False)['hp'].transform(lambda x: x.fillna(x.mean()))
+df['tank_size'] = df.groupby(['fuel_encoded', 'brand_encoded','transmission_encoded', pd.cut(df['year_scaled'], bins=10)], observed=False)['tank_size'].transform(lambda x: x.fillna(x.mean()))
+df['cyl'] = df.groupby(['fuel_encoded', 'brand_encoded', 'transmission_encoded', pd.cut(df['year_scaled'], bins=10)], observed=False)['cyl'].transform(lambda x: x.fillna(x.mean()))
 
 # Fill any remaining NaN values with overall column mean
 df['hp'].fillna(df['hp'].mean(), inplace=True)
@@ -148,9 +150,8 @@ df['cyl_scaled'] = scaler.fit_transform(df[['cyl']])
 df = df.drop(columns=(['cyl']))
 
 # Filter out outliers in mileage_scaled
-df = df[(df['mileage_scaled'] < df['mileage_scaled'].quantile(0.99)) & (df['mileage_scaled'] > df['mileage_scaled'].quantile(0.01))]
 
 # Save the cleaned and encoded DataFrame to a new CSV file
-print(df.head(30))
+print(df.head())
 print(df.info())
 df.to_csv('clean_train.csv', index=False)
