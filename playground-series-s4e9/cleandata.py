@@ -2,7 +2,7 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler
 scaler = StandardScaler()
 # Load the data
-df = pd.read_csv('test.csv')
+df = pd.read_csv('train.csv')
 '''
 --------------------
 	EXTRACTION
@@ -85,8 +85,6 @@ df = df.drop(columns=['model_year'])
 
 
 # MILEAGE
-df['mileage_scaled'] = scaler.fit_transform(df[['milage']])
-df = df.drop(columns=['milage'])
 
 # FUEL TYPE
 fuel_mapping = {fuel_type: idx for idx,
@@ -154,6 +152,7 @@ df['accident_damage_reported'] = (
     df['accident'] == 'At least 1 accident or damage reported').astype(int)
 
 df = df.drop(columns=['accident'])
+df = df.drop(columns=['accident_none_reported'])
 
 # CLEAN TITLE
 df['clean_title_yes'] = (df['clean_title'] == 'Yes').astype(int)
@@ -167,13 +166,8 @@ df = df.drop(columns=['clean_title'])
 --------------------
 '''
 
-# Scaling and binning the hp column
-df['hp_scaled'] = scaler.fit_transform(df[['hp']])
-df = df.drop(columns=['hp'])
 
 # Scaling and binning the tank_size column
-df['tank_scaled'] = scaler.fit_transform(df[['tank_size']])
-df = df.drop(columns=['tank_size'])
 
 
 # Scale the cyl column
@@ -184,4 +178,4 @@ print(df.info())
 print(df.min())
 print(df.max())
 
-df.to_csv('clean_test.csv', index=False)
+df.to_csv('clean_train.csv', index=False)
