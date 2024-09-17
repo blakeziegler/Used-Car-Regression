@@ -24,7 +24,7 @@ best_model = xgb.XGBRegressor(
     min_child_weight=0.004,
     subsample=0.96,
     colsample_bytree=0.5,
-    reg_lambda=11,
+    reg_lambda=12,
     alpha=0.65,
     use_label_encoder=False,
     eval_metric='mlogloss',
@@ -59,5 +59,3 @@ submission = pd.DataFrame({
 submission.to_csv('submission2.csv', index=False)
 
 
-# Best:
-# Validation RMSE: 66002.2196472903
