@@ -36,15 +36,15 @@ param_dist = {
     'min_child_weight': uniform(0.01, 0.05),
     'subsample': uniform(0.985, 0.999),
     'colsample_bytree': uniform(0.4, 0.6),
-    'reg_lambda': uniform(15, 18),
-    'alpha': uniform(0.35, 0.55)
+    'reg_lambda': [11, 12],
+    'alpha': [0.45, 0.5, 0.55, 0.6]
 }
 
 # Define RMSE scoring
 rmse_scorer = make_scorer(lambda y_true, y_pred: np.sqrt(mean_squared_error(y_true, y_pred)), greater_is_better=False)
 
 # Perform hyperparameter tuning using RandomizedSearchCV on 10% of the data
-random_search = RandomizedSearchCV(estimator=xgb_model, param_distributions=param_dist, scoring=rmse_scorer, cv=3, n_iter=500, verbose=1, n_jobs=4, random_state=42)
+random_search = RandomizedSearchCV(estimator=xgb_model, param_distributions=param_dist, scoring=rmse_scorer, cv=5, n_iter=350, verbose=1, n_jobs=4, random_state=42)
 random_search.fit(X_tune, y_tune)
 
 # Get the best parameters
@@ -65,7 +65,7 @@ print(f'Validation RMSE: {rmse_val}')
 
 
 lgb_model = LGBMRegressor()
-cat_model = CatBoostRegressor(learning_rate=0.1, depth=6, iterations=1000, verbose=0)
+cat_model = CatBoostRegressor(learning_rate=0.1, depth=6, iterations=1000, verbose=1)
 
 # Define stacking model
 stacking_model = StackingRegressor(
