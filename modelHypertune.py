@@ -30,21 +30,21 @@ xgb_model = xgb.XGBRegressor(objective='reg:squarederror', seed=42)
 
 # Define the parameter grid for RandomizedSearchCV
 param_dist = {
-    'n_estimators': [1150, 1250, 1350],
-    'eta': uniform(0.003, 0.008), 
+    'n_estimators': [1250, 1500],
+    'eta': uniform(0.002, 0.005), 
     'max_depth': [5, 6, 7],
     'min_child_weight': uniform(0.01, 0.05),
     'subsample': uniform(0.985, 0.999),
-    'colsample_bytree': uniform(0.3, 0.5),
-    'reg_lambda': uniform(10, 14),
-    'alpha': uniform(0.25, 0.5)
+    'colsample_bytree': uniform(0.4, 0.6),
+    'reg_lambda': uniform(15, 18),
+    'alpha': uniform(0.35, 0.55)
 }
 
 # Define RMSE scoring
 rmse_scorer = make_scorer(lambda y_true, y_pred: np.sqrt(mean_squared_error(y_true, y_pred)), greater_is_better=False)
 
 # Perform hyperparameter tuning using RandomizedSearchCV on 10% of the data
-random_search = RandomizedSearchCV(estimator=xgb_model, param_distributions=param_dist, scoring=rmse_scorer, cv=5, n_iter=250, verbose=1, n_jobs=4, random_state=42)
+random_search = RandomizedSearchCV(estimator=xgb_model, param_distributions=param_dist, scoring=rmse_scorer, cv=3, n_iter=500, verbose=1, n_jobs=4, random_state=42)
 random_search.fit(X_tune, y_tune)
 
 # Get the best parameters
@@ -94,6 +94,5 @@ submission = pd.DataFrame({
 })
 
 # Save the submission file
-submission.to_csv('submission.csv', index=False)
+submission.to_csv('submissionTest.csv', index=False)
 
-# current best = 6709
