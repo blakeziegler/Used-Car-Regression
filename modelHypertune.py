@@ -4,6 +4,15 @@ from sklearn.model_selection import train_test_split, RandomizedSearchCV, cross_
 from scipy.stats import uniform
 from sklearn.metrics import make_scorer, mean_squared_error, mean_absolute_error
 import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error
+from sklearn.ensemble import StackingRegressor
+from sklearn.linear_model import Ridge
+from lightgbm import LGBMRegressor
+from catboost import CatBoostRegressor
+from skopt import BayesSearchCV
+from skopt.space import Real, Integer
+import numpy as np
 
 # Load the cleaned datasets
 train_clean = pd.read_csv('playground-series-s4e9/clean_train.csv')
@@ -27,7 +36,7 @@ param_dist = {
     'min_child_weight': uniform(0.01, 0.05),
     'subsample': uniform(0.985, 0.999),
     'colsample_bytree': uniform(0.3, 0.5),
-    'reg_lambda': uniform(10, 14),  
+    'reg_lambda': uniform(10, 14),
     'alpha': uniform(0.25, 0.5)
 }
 
@@ -35,7 +44,7 @@ param_dist = {
 rmse_scorer = make_scorer(lambda y_true, y_pred: np.sqrt(mean_squared_error(y_true, y_pred)), greater_is_better=False)
 
 # Perform hyperparameter tuning using RandomizedSearchCV on 10% of the data
-random_search = RandomizedSearchCV(estimator=xgb_model, param_distributions=param_dist, scoring=rmse_scorer, cv=4, n_iter=500, verbose=1, n_jobs=4, random_state=42)
+random_search = RandomizedSearchCV(estimator=xgb_model, param_distributions=param_dist, scoring=rmse_scorer, cv=2, n_iter=50, verbose=1, n_jobs=4, random_state=42)
 random_search.fit(X_tune, y_tune)
 
 # Get the best parameters
@@ -54,25 +63,31 @@ y_pred_val = best_model.predict(X_val)
 rmse_val = np.sqrt(mean_squared_error(y_val, y_pred_val))
 print(f'Validation RMSE: {rmse_val}')
 
+
+lgb_model = LGBMRegressor()
+cat_model = CatBoostRegressor(learning_rate=0.1, depth=6, iterations=1000, verbose=0)
+
+# Define stacking model
+stacking_model = StackingRegressor(
+    estimators=[('xgb', xgb.XGBRegressor(objective='reg:squarederror', seed=42, **best_params)), 
+                ('lgb', lgb_model), 
+                ('cat', cat_model)],
+    final_estimator=Ridge()
+)
+
+# Fit the stacking model
+stacking_model.fit(X_train, y_train)
+
+# Evaluate the stacking model
+y_pred_val_stack = stacking_model.predict(X_val)
+rmse_stack = np.sqrt(mean_squared_error(y_val, y_pred_val_stack))
+print(f'Validation RMSE (Stacking): {rmse_stack}')
+
 # Prepare the test data
 X_test = test_clean.drop(columns=['id'])
 
-# Make predictions on the test set
-y_pred_test = best_model.predict(X_test)
-
-importances = best_model.feature_importances_
-features = X_train.columns
-
-# Create a DataFrame for feature importances
-importance_df = pd.DataFrame({
-    'Feature': features,
-    'Importance': importances
-}).sort_values(by='Importance', ascending=False)
-
-# Print the feature importances table
-print("Feature Importances - XGBoost")
-print(importance_df)
-# Prepare the submission file
+# Make predictions on the test set using the stacking model
+y_pred_test = stacking_model.predict(X_test)
 submission = pd.DataFrame({
     'id': test_clean['id'],
     'price': y_pred_test
