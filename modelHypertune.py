@@ -44,7 +44,7 @@ param_dist = {
 rmse_scorer = make_scorer(lambda y_true, y_pred: np.sqrt(mean_squared_error(y_true, y_pred)), greater_is_better=False)
 
 # Perform hyperparameter tuning using RandomizedSearchCV on 10% of the data
-random_search = RandomizedSearchCV(estimator=xgb_model, param_distributions=param_dist, scoring=rmse_scorer, cv=2, n_iter=50, verbose=1, n_jobs=4, random_state=42)
+random_search = RandomizedSearchCV(estimator=xgb_model, param_distributions=param_dist, scoring=rmse_scorer, cv=5, n_iter=250, verbose=1, n_jobs=4, random_state=42)
 random_search.fit(X_tune, y_tune)
 
 # Get the best parameters
