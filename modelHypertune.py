@@ -26,22 +26,23 @@ y = train_clean['price']  # Target
 X_tune, _, y_tune, _ = train_test_split(X, y, test_size=0.2, random_state=42)
 
 # Define the XGBoost model
-xgb_model = xgb.XGBRegressor(objective='reg:squarederror', seed=42, subsample=0.99, max_depth=6, colsample_bytree=0.48, min_child_weight=0.045,)
-
+xgb_model = xgb.XGBRegressor(objective='reg:squarederror', seed=42, max_depth=5)
 # Define the parameter grid for RandomizedSearchCV
 param_dist = {
-    'n_estimators': [250, 500, 1000],
-    'eta': Real(0.002, 0.006),
-    'alpha': Real(0.35, 0.7),
-    'reg_lambda': Real(8, 15)
+    'n_estimators': [1000, 2000],
+    'eta': Real(0.003, 0.005),
+    'alpha': Real(0.30, 0.6),
+    'reg_lambda': Real(10, 15),
+    'subsample': Real(0.7, 1),
+	'gamma': Real(0,1),
+    'colsample_bytree': Real(0.3, 0.75),
+    'min_child_weight': Real(0.01, 0.1),
+	'subsample': Real(0.7, 1)
 }
 
-# Define RMSE scoring
-rmse_scorer = make_scorer(lambda y_true, y_pred: np.sqrt(mean_squared_error(y_true, y_pred)), greater_is_better=False)
-
-# Perform hyperparameter tuning using RandomizedSearchCV on 10% of the data
-random_search = BayesSearchCV(estimator=xgb_model, search_spaces=param_dist, scoring=rmse_scorer, cv=5, n_iter=100, verbose=2, n_jobs=-1, random_state=42)
+random_search = BayesSearchCV(estimator=xgb_model, search_spaces=param_dist, scoring=rmse_scorer, cv=4, n_iter=50, verbose=3, n_jobs=-1, random_state=42)
 random_search.fit(X_tune, y_tune)
+
 
 # Get the best parameters
 best_params = random_search.best_params_
@@ -57,7 +58,8 @@ y_pred_val = best_model.predict(X_val)
 
 # Calculate RMSE on the validation set
 rmse_val = np.sqrt(mean_squared_error(y_val, y_pred_val))
-print(f'Validation RMSE: {rmse_val}')
+print(f'Validation RMSE: {frmse_val}')
+
 
 
 lgb_model = LGBMRegressor()
@@ -83,6 +85,7 @@ print(f'Validation RMSE (Stacking): {rmse_stack}')
 X_test = test_clean.drop(columns=['id'])
 
 # Make predictions on the test set using the stacking model
+y_test, y_pred))
 y_pred_test = stacking_model.predict(X_test)
 submission = pd.DataFrame({
     'id': test_clean['id'],

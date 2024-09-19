@@ -31,7 +31,6 @@ best_model = xgb.XGBRegressor(
     random_state=42
 )
 rmse_scorer = make_scorer(lambda y_true, y_pred: np.sqrt(mean_squared_error(y_true, y_pred)), greater_is_better=False)
-# Train the model with the best hyperparameters on the entire dataset
 best_model.fit(X, y)
 
 X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
