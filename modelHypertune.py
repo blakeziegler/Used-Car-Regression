@@ -26,22 +26,19 @@ y = train_clean['price']  # Target
 X_tune, _, y_tune, _ = train_test_split(X, y, test_size=0.2, random_state=42)
 
 # Define the XGBoost model
-xgb_model = xgb.XGBRegressor(objective='reg:squarederror', seed=42, subsample=0.99, max_depth=6, colsample_bytree=0.48)
+xgb_model = xgb.XGBRegressor(objective='reg:squarederror', seed=42, subsample=0.99, max_depth=6, colsample_bytree=0.48, min_child_weight=0.045, reg_lambda=12, alpha=0.55)
 
 # Define the parameter grid for RandomizedSearchCV
 param_dist = {
-    'n_estimators': [1000, 1500, 2000],
-    'eta': [0.0035, 0.004, 0.003], 
-    'min_child_weight': [0.04, 0.045, 0.05],
-    'reg_lambda': [11, 12, 13],
-    'alpha': [0.5, 0.55, 0.6, 0.65]
+    'n_estimators': [2000, 2500, 3000],
+    'eta': [0.0035, 0.0025, 0.003, 0.002], 
 }
 
 # Define RMSE scoring
 rmse_scorer = make_scorer(lambda y_true, y_pred: np.sqrt(mean_squared_error(y_true, y_pred)), greater_is_better=False)
 
 # Perform hyperparameter tuning using RandomizedSearchCV on 10% of the data
-random_search = BayesSearchCV(estimator=xgb_model, search_spaces=param_dist, scoring=rmse_scorer, cv=5, n_iter=60, verbose=1, n_jobs=5, random_state=42)
+random_search = BayesSearchCV(estimator=xgb_model, search_spaces=param_dist, scoring=rmse_scorer, cv=5, n_iter=20, verbose=1, n_jobs=5, random_state=42)
 random_search.fit(X_tune, y_tune)
 
 # Get the best parameters
