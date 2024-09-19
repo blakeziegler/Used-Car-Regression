@@ -2,7 +2,7 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler
 scaler = StandardScaler()
 # Load the data
-df = pd.read_csv('train.csv')
+df = pd.read_csv('test.csv')
 '''
 --------------------
 	EXTRACTION
@@ -69,12 +69,15 @@ df['model_encoded'] = df['model'].apply(
     lambda x: model_encoding.get(x, model_encoding['Other']))
 df = df.drop(columns=['model'])
 
+
+df['hp'] = df.groupby(['brand_encoded', pd.cut(df['model_year'], bins=5)], observed=False)['hp'].transform(lambda x: x.fillna(x.mean()))
+df['tank_size'] = df.groupby(['brand_encoded', pd.cut(df['model_year'], bins=5)], observed=False)['tank_size'].transform(lambda x: x.fillna(x.mean()))
+df['cyl'] = df.groupby(['brand_encoded', pd.cut(df['model_year'], bins=5)], observed=False)['cyl'].transform(lambda x: x.fillna(x.mean()))
+
 # HP, TANK, CYL
 df['hp'].fillna(df['hp'].mean(), inplace=True)
 df['tank_size'].fillna(df['tank_size'].mean(), inplace=True)
 df['cyl'].fillna(df['cyl'].mean(), inplace=True)
-
-df['weight_to_power'] = df['hp'] / df['tank_size']
 
 
 # MODEL YEAR
@@ -166,16 +169,9 @@ df = df.drop(columns=['clean_title'])
 --------------------
 '''
 
-
-# Scaling and binning the tank_size column
-
-
-# Scale the cyl column
-
-# Save the cleaned and encoded DataFrame to a new CSV file
 print(df.head())
 print(df.info())
 print(df.min())
 print(df.max())
 
-df.to_csv('clean_train.csv', index=False)
+df.to_csv('clean_test.csv', index=False)
