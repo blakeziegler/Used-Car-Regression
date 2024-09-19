@@ -40,6 +40,7 @@ param_dist = {
 	'subsample': Real(0.7, 1)
 }
 
+rmse_scorer = make_scorer(lambda y_true, y_pred: np.sqrt(mean_squared_error(y_true, y_pred)), greater_is_better=False)
 random_search = BayesSearchCV(estimator=xgb_model, search_spaces=param_dist, scoring=rmse_scorer, cv=4, n_iter=50, verbose=3, n_jobs=-1, random_state=42)
 random_search.fit(X_tune, y_tune)
 
@@ -58,7 +59,7 @@ y_pred_val = best_model.predict(X_val)
 
 # Calculate RMSE on the validation set
 rmse_val = np.sqrt(mean_squared_error(y_val, y_pred_val))
-print(f'Validation RMSE: {frmse_val}')
+print(f'Validation RMSE: {rmse_val}')
 
 
 
@@ -85,7 +86,6 @@ print(f'Validation RMSE (Stacking): {rmse_stack}')
 X_test = test_clean.drop(columns=['id'])
 
 # Make predictions on the test set using the stacking model
-y_test, y_pred))
 y_pred_test = stacking_model.predict(X_test)
 submission = pd.DataFrame({
     'id': test_clean['id'],
