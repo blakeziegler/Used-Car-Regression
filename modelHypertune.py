@@ -29,11 +29,11 @@ X_tune, _, y_tune, _ = train_test_split(X, y, test_size=0.2, random_state=42)
 xgb_model = xgb.XGBRegressor(objective='reg:squarederror', seed=42)
 # Define the parameter grid for RandomizedSearchCV
 param_dist = {
-    'max_depth': Integer(5, 6, 7, 8),
+    'max_depth': [5, 6, 7, 8],
     'eta': Real(0.001, 0.1),
-    'n_estimators': Integer(900, 1250),
+    'n_estimators': [900, 1000, 1100, 1200],
     'alpha': Real(0.1, 1),
-    'reg_lambda': Integer(0, 15),
+    'reg_lambda': Real(0, 15),
     'colsample_bytree': Real(0.35, 0.75),
     'min_child_weight': Real(0.01, 1),
 	'subsample': Real(0.90, 1)
