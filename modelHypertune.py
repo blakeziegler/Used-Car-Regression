@@ -29,13 +29,13 @@ X_tune, _, y_tune, _ = train_test_split(X, y, test_size=0.2, random_state=42)
 xgb_model = xgb.XGBRegressor(objective='reg:squarederror', seed=42)
 # Define the parameter grid for RandomizedSearchCV
 param_dist = {
-    'max_depth': [5, 6, 7, 8],
-    'eta': Real(0.001, 0.1),
-    'n_estimators': [900, 1000, 1100, 1200],
-    'alpha': Real(0.1, 1),
+    'max_depth': [4, 5, 6, 7],
+    'n_estimators': [750, 1000, 1200],
+    'eta': Real(0.001, 0.01),
+    'alpha': Real(0.01, 1),
     'reg_lambda': Real(0, 15),
-    'colsample_bytree': Real(0.35, 0.75),
-    'min_child_weight': Real(0.01, 1),
+    'colsample_bytree': Real(0.01, 1),
+    'min_child_weight': Real(0.3, 0.7),
 	'subsample': Real(0.90, 1)
 }
 
@@ -44,9 +44,9 @@ random_search = BayesSearchCV(
     estimator=xgb_model, 
     search_spaces=param_dist,
     scoring=rmse_scorer,
-    cv=4,
-    n_iter=200,
-    verbose=3,
+    cv=3,
+    n_iter=250,
+    verbose=5,
     n_jobs=6,
     random_state=42)
 random_search.fit(X_tune, y_tune)
