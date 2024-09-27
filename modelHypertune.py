@@ -39,13 +39,12 @@ param_dist = {
 	'subsample': Real(0.90, 1)
 }
 
-rmse_scorer = make_scorer(lambda y_true, y_pred: np.sqrt(mean_squared_error(y_true, y_pred)), greater_is_better=False)
 random_search = BayesSearchCV(
     estimator=xgb_model, 
     search_spaces=param_dist,
-    scoring=rmse_scorer,
+    scoring='neg_root_mean_squared_error',
     cv=3,
-    n_iter=250,
+    n_iter=200,
     verbose=5,
     n_jobs=6,
     random_state=42)
